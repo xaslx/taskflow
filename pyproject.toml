@@ -1,0 +1,20 @@
+[project]
+name = "taskflow"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "maksim",email = "knyazev.maksim2852@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[all] (>=0.121.3,<0.122.0)",
+    "alembic (>=1.17.2,<2.0.0)",
+    "jinja2 (>=3.1.6,<4.0.0)",
+    "dishka (>=1.7.2,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
