@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from src.schemas.team import CreateTeamSchema, TeamOut
 from src.repositories.team import BaseTeamRepository
 from src.models.team import TeamModel
-from src.schemas.user import UserOut
 from uuid import uuid4
 
 
