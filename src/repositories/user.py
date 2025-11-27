@@ -69,20 +69,9 @@ class SQLAlchemyUserRepository:
         return result.scalar_one_or_none() is not None
     
     async def save(self, user: UserModel) -> UserModel:
-        stmt = (
-            update(UserModel)
-            .where(UserModel.id == user.id)
-            .values(
-                email=user.email,
-                hashed_password=user.hashed_password,
-                role=user.role,
-                is_deleted=user.is_deleted,
-                team_code=user.team_code,
-            )
-        )
-        await self._session.execute(stmt)
-        await self._session.refresh(user)
         await self._session.commit()
+        await self._session.refresh(user)
+        
         return user
     
 
