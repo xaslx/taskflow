@@ -1,16 +1,25 @@
 from pydantic import BaseModel, ConfigDict
-
+from src.schemas.user import UserOut
 
 
 
 class CreateTeamSchema(BaseModel):
     name: str
 
+class JoinTeam(BaseModel):
+    code: str
+
 
 class TeamOut(BaseModel):
     id: int
     name: str
     code: str
-    users: list['UserOut']
-
     model_config = ConfigDict(from_attributes=True)
+
+class AddMember(BaseModel):
+    user_id: int
+
+class TeamOutWithUsers(TeamOut):
+    users: list[UserOut]
+
+    
