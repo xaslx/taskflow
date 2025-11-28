@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator
 from enum import StrEnum
 import re
+from datetime import datetime
 
 
 def validate_password(value: str) -> str:
@@ -49,6 +50,8 @@ class UserCreateSchema(BaseUserSchema):
 class UserOut(BaseUserSchema):
     id: int
     team_id: int | None = Field(default=None)
+    created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
