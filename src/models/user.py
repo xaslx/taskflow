@@ -1,8 +1,8 @@
 from src.models.base import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, DateTime
 from src.schemas.user import UserRole
-
+from datetime import datetime
 
 
 
@@ -14,6 +14,8 @@ class UserModel(Base):
     role: Mapped[str] = mapped_column(default=UserRole.USER)
     hashed_password: Mapped[str]
     is_deleted: Mapped[bool] = mapped_column(default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now, onupdate=datetime.now)
 
     team_id: Mapped[int | None] = mapped_column(
         ForeignKey('teams.id', ondelete='SET NULL'),
@@ -41,3 +43,10 @@ class UserModel(Base):
         foreign_keys='EvaluationModel.user_id',
         back_populates='user'
     )
+
+    organized_meetings: Mapped[list['MeetingModel']] = relationship(
+        back_populates='organizer'
+    )
+
+    def __str__(self) -> str:
+        return f'User: {self.id}: {self.email}'

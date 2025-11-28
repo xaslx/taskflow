@@ -1,6 +1,5 @@
 from datetime import datetime
-from enum import Enum
-from sqlalchemy import String, Text, DateTime, ForeignKey, Enum as SQLEnum
+from sqlalchemy import DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.models.base import Base
 from src.schemas.task import TaskStatus
@@ -42,12 +41,15 @@ class TaskModel(Base):
         cascade='all, delete-orphan'
     )
 
+    def __str__(self) -> str:
+        return f'Task: {self.id}: {self.title}'
+
 
 class TaskCommentModel(Base):
     __tablename__ = 'task_comments'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    text: Mapped[str] = mapped_column(Text)
+    text: Mapped[str]
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now, onupdate=datetime.now)
 
@@ -56,3 +58,6 @@ class TaskCommentModel(Base):
 
     author: Mapped['UserModel'] = relationship(back_populates='task_comments')
     task: Mapped['TaskModel'] = relationship(back_populates='comments')
+
+    def __str__(self) -> str:
+        return f'TaskComment: {self.id}: {self.text[:10]}'

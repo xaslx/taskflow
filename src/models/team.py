@@ -19,3 +19,10 @@ class TeamModel(Base):
         back_populates='team',
         cascade='all, delete-orphan'
     )
+    meetings: Mapped[list['MeetingModel']] = relationship(
+        back_populates='team',
+        cascade='all, delete-orphan'
+    )
+
+    def __str__(self) -> str:
+        return f'Team: {self.id}: {self.name}'

@@ -25,3 +25,6 @@ class EvaluationModel(Base):
         foreign_keys=[user_id],
         back_populates='received_evaluations'
     )
+
+    def __str__(self):
+        return f'Evaluation #{self.id} — Score: {self.score} — User: {self.user_id} — Task: {self.task_id}'

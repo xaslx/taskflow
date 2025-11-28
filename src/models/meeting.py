@@ -20,3 +20,6 @@ class MeetingModel(Base):
 
     organizer: Mapped['UserModel'] = relationship(back_populates='organized_meetings')
     team: Mapped['TeamModel'] = relationship(back_populates='meetings')
+
+    def __str__(self) -> str:
+        return f'Meeting: {self.id}: {self.title}'
