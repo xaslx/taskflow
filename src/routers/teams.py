@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Path
+from fastapi import APIRouter, status, Path, Depends as FastAPIDepends
 from dishka.integrations.fastapi import inject, FromDishka as Depends
 from src.models.user import UserModel
 from src.schemas.team import JoinTeam, TeamOut, CreateTeamSchema, TeamOutWithUsers, AddMember
@@ -7,6 +7,7 @@ from src.use_cases.admin.create_team import CreateTeamUseCase
 from src.use_cases.user.join_team import JoinTeamByCodeUseCase
 from src.use_cases.admin.get_all_teams import GetAllTeamsUseCase
 from src.use_cases.admin.get_team_info import GetTeamInfoUseCase
+from src.schemas.pagination import PaginatedResponse, PaginationParams
 from typing import Annotated
 from src.use_cases.admin.team_manager import AddTeamMemberUseCase, ChangeUserRoleUseCase, DeleteTeamMemberUseCase
 
@@ -72,7 +73,7 @@ async def join_team_by_code(
     responses={
         status.HTTP_200_OK: {
             'description': 'Успешное получение списка команд',
-            'model': list[TeamOut],
+            'model': PaginatedResponse[TeamOut],
         },
         status.HTTP_401_UNAUTHORIZED: {'description': 'Не авторизован'},
         status.HTTP_400_BAD_REQUEST: {'description': 'Пользователь уже состоит в команде'},
@@ -83,10 +84,11 @@ async def join_team_by_code(
 @inject
 async def get_all_teams(
     admin: Depends[AdminUserOut],
-    use_case: Depends[GetAllTeamsUseCase]
-) -> list[TeamOut]:
+    use_case: Depends[GetAllTeamsUseCase],
+    pagination: PaginationParams = FastAPIDepends(),
+) -> PaginatedResponse[TeamOut]:
     
-    return await use_case.execute()
+    return await use_case.execute(pagination=pagination)
 
 
 
