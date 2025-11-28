@@ -9,9 +9,6 @@ class EvaluationBase(BaseModel):
 class EvaluationCreate(EvaluationBase):
     task_id: int
 
-class EvaluationUpdate(BaseModel):
-    score: int | None = Field(ge=1, le=5, default=None)
-
 
 class EvaluationOut(EvaluationBase):
     

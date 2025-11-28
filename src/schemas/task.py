@@ -11,8 +11,8 @@ class TaskStatus(str, Enum):
 
 
 class TaskBase(BaseModel):
-    title: str
-    description: str | None = Field(default=None)
+    title: str = Field(max_length=100)
+    description: str | None = Field(default=None, max_length=500)
     deadline: datetime | None = Field(default=None)
 
 
@@ -21,11 +21,8 @@ class TaskCreate(TaskBase):
     status: TaskStatus = Field(default=TaskStatus.OPEN)
 
 
-class TaskUpdate(BaseModel):
-    title: str | None = Field(default=None)
-    description: str | None = Field(default=None)
+class TaskUpdate(TaskBase):
     status: TaskStatus | None = Field(default=None)
-    deadline: datetime | None = Field(default=None) 
     assignee_id: int | None = Field(default=None) 
 
 

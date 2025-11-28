@@ -1,10 +1,10 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from src.schemas.user import UserOut
 
 
 
 class CreateTeamSchema(BaseModel):
-    name: str
+    name: str = Field(max_length=50)
 
 class JoinTeam(BaseModel):
     code: str

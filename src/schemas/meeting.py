@@ -4,8 +4,8 @@ from datetime import datetime
 
 
 class MeetingBase(BaseModel):
-    title: str
-    description: str | None = Field(default=None)
+    title: str = Field(max_length=100)
+    description: str | None = Field(default=None, max_length=500)
     start_time: datetime
     end_time: datetime
     participant_ids: list[int] = Field(default=[])
