@@ -13,3 +13,9 @@ class TeamModel(Base):
         back_populates='team',
         passive_deletes=True
     )
+
+
+    tasks: Mapped[list['TaskModel']] = relationship(
+        back_populates='team',
+        cascade='all, delete-orphan'
+    )

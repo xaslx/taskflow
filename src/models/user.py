@@ -20,3 +20,24 @@ class UserModel(Base):
         nullable=True
     )
     team: Mapped['TeamModel'] = relationship('TeamModel', back_populates='users')
+
+    authored_tasks: Mapped[list['TaskModel']] = relationship(
+        foreign_keys='TaskModel.author_id',
+        back_populates='author'
+    )
+    assigned_tasks: Mapped[list['TaskModel']] = relationship(
+        foreign_keys='TaskModel.assignee_id', 
+        back_populates='assignee'
+    )
+    task_comments: Mapped[list['TaskCommentModel']] = relationship(
+        back_populates='author',
+        cascade='all, delete-orphan'
+    )
+    evaluations: Mapped[list['EvaluationModel']] = relationship(
+        foreign_keys='EvaluationModel.evaluator_id',
+        back_populates='evaluator'
+    )
+    received_evaluations: Mapped[list['EvaluationModel']] = relationship(
+        foreign_keys='EvaluationModel.user_id',
+        back_populates='user'
+    )
