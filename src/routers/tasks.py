@@ -1,9 +1,12 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Path
 from src.schemas.task import TaskCommentCreate, TaskCreate, TaskOut, TaskUpdate
 from dishka.integrations.fastapi import inject, FromDishka as Depends
 from src.schemas.user import ManagerUserOut
 from src.use_cases.manager.create_task import CreateTaskUseCase
 from src.use_cases.manager.get_all_tasks import GetAllTasksUseCase
+from src.use_cases.manager.get_by_task_by_id import GetTaskByIdUseCase
+from typing import Annotated
+from src.use_cases.manager.delete_task_by_id import DeleteTaskByIdUseCase
 
 
 
@@ -59,3 +62,55 @@ async def get_all_tasks(
 ) -> list[TaskOut]:
     
     return await use_case.execute(team_id=manager.team_id)
+
+
+
+@router.get(
+    '/{task_id}',
+    description='[MANAGER] Получение задачи по ID',
+    summary='Получить задачу по ID',
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {
+            'description': 'Успешное получение задачи',
+            'model': TaskOut,
+        },
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Не авторизован'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Недостаточно прав. Только для менеджеров'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Менеджер не состоит в команде.'}
+    },
+)
+@inject
+async def get_task_by_id(
+    task_id: Annotated[int, Path()],
+    manager: Depends[ManagerUserOut],
+    use_case: Depends[GetTaskByIdUseCase],
+) -> TaskOut | None:
+    
+    return await use_case.execute(task_id=task_id, team_id=manager.team_id)
+
+
+@router.delete(
+    '/{task_id}',
+    description='[MANAGER] Удаление задачи по ID',
+    summary='Удалить задачу по ID',
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses={
+        status.HTTP_204_NO_CONTENT: {'description': 'Успешное удаление задачи',},
+        status.HTTP_401_UNAUTHORIZED: {'description': 'Не авторизован'},
+        status.HTTP_403_FORBIDDEN: {'description': 'Недостаточно прав.'},
+        status.HTTP_400_BAD_REQUEST: {'description': 'Менеджер не состоит в команде.'}
+    },
+)
+@inject
+async def delete_task_by_id(
+    task_id: Annotated[int, Path()],
+    manager: Depends[ManagerUserOut],
+    use_case: Depends[DeleteTaskByIdUseCase],
+) -> None:
+    
+    return await use_case.execute(
+        task_id=task_id,
+        user_id=manager.id,
+        user_team_id=manager.team_id
+    )
