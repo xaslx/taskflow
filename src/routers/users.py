@@ -69,7 +69,7 @@ async def delete_user(
 
 
 @router.delete(
-    '/users/{user_id}',
+    '/admin/{user_id}',
     description='[ADMIN] Удаление пользователя по его ID.',
     summary='Удалить пользователя',
     status_code=status.HTTP_204_NO_CONTENT,
