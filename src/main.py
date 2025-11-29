@@ -5,7 +5,7 @@ from src.exceptions.base import BaseAppException
 from src.config import Config
 from dishka import AsyncContainer, make_async_container
 from dishka.integrations import fastapi as fastapi_integration
-from src.routers import auth, users, teams, tasks, evaluations, meeting
+from src.routers import auth, users, teams, tasks, evaluations, meeting, main_page
 from fastapi.middleware.cors import CORSMiddleware
 from src.ioc import AppProvider
 from sqladmin import Admin
@@ -18,6 +18,12 @@ async def lifespan(app: FastAPI):
 
     yield
 
+
+def create_app_test() -> FastAPI:
+
+    app: FastAPI = FastAPI()
+
+    return app
 
 
 def create_app() -> FastAPI:
@@ -47,6 +53,7 @@ def create_app() -> FastAPI:
     app.include_router(tasks.router, prefix='/api/tasks', tags=['Задачи'])
     app.include_router(evaluations.router, prefix='/api/evaluations', tags=['Оценки'])
     app.include_router(meeting.router, prefix='/api/meetings', tags=['Встречи'])
+    app.include_router(main_page.router, prefix='', tags=['Главная страница'])
 
 
 
