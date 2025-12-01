@@ -9,7 +9,6 @@ from uuid import uuid4
 class CreateTeamUseCase:
     _team_repository: BaseTeamRepository
 
-
     async def execute(self, team: CreateTeamSchema) -> TeamOut:
 
         code: str = str(uuid4())

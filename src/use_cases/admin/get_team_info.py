@@ -4,7 +4,6 @@ from src.models.team import TeamModel
 from src.repositories.team import BaseTeamRepository
 
 
-
 @dataclass
 class GetTeamInfoUseCase:
     _team_repository: BaseTeamRepository

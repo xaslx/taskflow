@@ -8,13 +8,15 @@ from src.schemas.evaluation import EvaluationCreate
 
 
 class BaseEvaluationRepository(ABC):
-    
+
     @abstractmethod
-    async def add(self, evaluation_data: EvaluationCreate, evaluator_id: int, user_id: int) -> EvaluationModel: ...
-    
+    async def add(
+        self, evaluation_data: EvaluationCreate, evaluator_id: int, user_id: int
+    ) -> EvaluationModel: ...
+
     @abstractmethod
     async def get_by_user_id(self, user_id: int) -> list[EvaluationModel]: ...
-    
+
     @abstractmethod
     async def get_by_task_id(self, task_id: int) -> EvaluationModel | None: ...
 
@@ -23,11 +25,11 @@ class BaseEvaluationRepository(ABC):
 class SQLAlchemyEvaluationRepository:
     _session: AsyncSession
 
-    async def add(self, evaluation_data: EvaluationCreate, evaluator_id: int, user_id: int) -> EvaluationModel:
+    async def add(
+        self, evaluation_data: EvaluationCreate, evaluator_id: int, user_id: int
+    ) -> EvaluationModel:
         evaluation_model = EvaluationModel(
-            **evaluation_data.model_dump(),
-            evaluator_id=evaluator_id,
-            user_id=user_id
+            **evaluation_data.model_dump(), evaluator_id=evaluator_id, user_id=user_id
         )
         self._session.add(evaluation_model)
         await self._session.flush()
@@ -48,11 +50,7 @@ class SQLAlchemyEvaluationRepository:
         result = await self._session.execute(stmt)
         return result.scalars().all()
 
-
     async def get_by_task_id(self, task_id: int) -> EvaluationModel | None:
-        stmt = (
-            select(EvaluationModel)
-            .where(EvaluationModel.task_id == task_id)
-        )
+        stmt = select(EvaluationModel).where(EvaluationModel.task_id == task_id)
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()

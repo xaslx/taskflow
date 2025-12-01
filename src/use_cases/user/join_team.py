@@ -15,12 +15,11 @@ class JoinTeamByCodeUseCase:
 
     async def execute(self, user: UserModel, code: str) -> UserOut:
 
-
         team: TeamModel | None = await self._team_repository.get_by_code(code=code)
 
         if not team:
             raise TeamNotFoundException()
-        
+
         if user.team_id:
             raise AlreadyInTeamException()
 

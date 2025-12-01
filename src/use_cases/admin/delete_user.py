@@ -8,7 +8,6 @@ from src.exceptions.user import UserNotFoundException
 class DeleteUserByAdminUseCase:
     _user_repository: BaseUserRepository
 
-
     async def execute(self, user_id: int) -> bool:
 
         user: UserModel | None = await self._user_repository.get_by_id(id=user_id)

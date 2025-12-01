@@ -5,9 +5,9 @@ from typing import Optional
 
 
 class TaskStatus(str, Enum):
-    OPEN = 'open'
-    IN_PROGRESS = 'in_progress'
-    COMPLETED = 'completed'
+    OPEN = "open"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
 
 
 class TaskBase(BaseModel):
@@ -23,30 +23,29 @@ class TaskCreate(TaskBase):
 
 class TaskUpdate(TaskBase):
     status: TaskStatus | None = Field(default=None)
-    assignee_id: int | None = Field(default=None) 
+    assignee_id: int | None = Field(default=None)
 
 
 class TaskOut(TaskBase):
-    
+
     id: int
     status: TaskStatus
     author_id: int
     team_id: int
     created_at: datetime
     updated_at: datetime
-    comment: list['TaskCommentBase'] | None = Field(default=None)
+    comment: list["TaskCommentBase"] | None = Field(default=None)
     assignee_id: int | None = Field(default=None)
 
     model_config = ConfigDict(from_attributes=True)
-
 
 
 class TaskCommentBase(BaseModel):
     text: str
 
 
-class TaskCommentCreate(TaskCommentBase):
-    ...
+class TaskCommentCreate(TaskCommentBase): ...
+
 
 class TaskCommentOut(BaseModel):
     id: int

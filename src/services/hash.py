@@ -3,12 +3,12 @@ from passlib.context import CryptContext
 from dataclasses import dataclass
 
 
-pwd_context: CryptContext = CryptContext(schemes=['bcrypt'], deprecated='auto')
+pwd_context: CryptContext = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 @dataclass
 class BaseHashService(ABC):
-    
+
     @abstractmethod
     def get_password_hash(self, password: str) -> str:
         pass
@@ -16,9 +16,9 @@ class BaseHashService(ABC):
     @abstractmethod
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         pass
-    
 
-@dataclass 
+
+@dataclass
 class BCryptHashService(BaseHashService):
 
     def get_password_hash(self, password: str) -> str:

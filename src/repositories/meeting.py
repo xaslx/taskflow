@@ -10,17 +10,21 @@ from src.schemas.meeting import MeetingCreate
 
 class BaseMeetingRepository(ABC):
     @abstractmethod
-    async def add(self, meeting_data: MeetingCreate, organizer_id: int) -> MeetingModel: ...
-    
+    async def add(
+        self, meeting_data: MeetingCreate, organizer_id: int
+    ) -> MeetingModel: ...
+
     @abstractmethod
     async def get_by_id(self, meeting_id: int) -> MeetingModel | None: ...
-    
+
     @abstractmethod
     async def get_by_user_id(self, user_id: int) -> list[MeetingModel]: ...
-    
+
     @abstractmethod
-    async def get_user_meetings_in_time_range(self, user_id: int, start_time: datetime, end_time: datetime) -> list[MeetingModel]: ...
-    
+    async def get_user_meetings_in_time_range(
+        self, user_id: int, start_time: datetime, end_time: datetime
+    ) -> list[MeetingModel]: ...
+
     @abstractmethod
     async def delete(self, meeting: MeetingModel) -> None: ...
 
@@ -31,8 +35,7 @@ class SQLAlchemyMeetingRepository:
 
     async def add(self, meeting_data: MeetingCreate, organizer_id: int) -> MeetingModel:
         meeting_model = MeetingModel(
-            **meeting_data.model_dump(),
-            organizer_id=organizer_id
+            **meeting_data.model_dump(), organizer_id=organizer_id
         )
         self._session.add(meeting_model)
         await self._session.flush()
@@ -62,7 +65,7 @@ class SQLAlchemyMeetingRepository:
             .where(
                 or_(
                     MeetingModel.organizer_id == user_id,
-                    MeetingModel.participant_ids.any(user_id)
+                    MeetingModel.participant_ids.any(user_id),
                 )
             )
             .order_by(MeetingModel.start_time.asc())
@@ -70,21 +73,29 @@ class SQLAlchemyMeetingRepository:
         result = await self._session.execute(stmt)
         return result.scalars().all()
 
-    async def get_user_meetings_in_time_range(self, user_id: int, start_time: datetime, end_time: datetime) -> list[MeetingModel]:
-        stmt = (
-            select(MeetingModel)
-            .where(
-                and_(
-                    or_(
-                        MeetingModel.organizer_id == user_id,
-                        MeetingModel.participant_ids.any(user_id)
+    async def get_user_meetings_in_time_range(
+        self, user_id: int, start_time: datetime, end_time: datetime
+    ) -> list[MeetingModel]:
+        stmt = select(MeetingModel).where(
+            and_(
+                or_(
+                    MeetingModel.organizer_id == user_id,
+                    MeetingModel.participant_ids.any(user_id),
+                ),
+                or_(
+                    and_(
+                        MeetingModel.start_time <= start_time,
+                        MeetingModel.end_time > start_time,
                     ),
-                    or_(
-                        and_(MeetingModel.start_time <= start_time, MeetingModel.end_time > start_time),
-                        and_(MeetingModel.start_time < end_time, MeetingModel.end_time >= end_time),
-                        and_(MeetingModel.start_time >= start_time, MeetingModel.end_time <= end_time)
-                    )
-                )
+                    and_(
+                        MeetingModel.start_time < end_time,
+                        MeetingModel.end_time >= end_time,
+                    ),
+                    and_(
+                        MeetingModel.start_time >= start_time,
+                        MeetingModel.end_time <= end_time,
+                    ),
+                ),
             )
         )
         result = await self._session.execute(stmt)

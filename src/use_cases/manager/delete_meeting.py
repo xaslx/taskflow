@@ -11,11 +11,12 @@ class DeleteMeetingUseCase:
 
     async def execute(self, meeting_id: int, user_id: int, user_team_id: int) -> None:
 
-        meeting: MeetingModel | None = await self._meeting_repository.get_by_id(meeting_id)
+        meeting: MeetingModel | None = await self._meeting_repository.get_by_id(
+            meeting_id
+        )
 
         if not meeting:
             raise MeetingNotFoundException()
-
 
         if meeting.team_id != user_team_id:
             raise ForbiddenException()

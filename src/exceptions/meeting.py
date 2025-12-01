@@ -7,8 +7,7 @@ class TimeConflictException(BaseAppException):
 
     @property
     def message(self) -> str:
-        return 'Время встречи пересекается с другими событиями.'
-    
+        return "Время встречи пересекается с другими событиями."
 
 
 class MeetingNotFoundException(BaseAppException):
@@ -16,4 +15,4 @@ class MeetingNotFoundException(BaseAppException):
 
     @property
     def message(self) -> str:
-        return 'Встреча не найдена.'
+        return "Встреча не найдена."

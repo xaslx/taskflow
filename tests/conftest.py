@@ -29,8 +29,12 @@ def user_repository() -> BaseUserRepository:
 
 
 @pytest.fixture
-def register_usecase(user_repository: BaseUserRepository, hash_service: BaseHashService) -> RegisterUserUseCase:
-    return RegisterUserUseCase(_user_repository=user_repository, _hash_service=hash_service)
+def register_usecase(
+    user_repository: BaseUserRepository, hash_service: BaseHashService
+) -> RegisterUserUseCase:
+    return RegisterUserUseCase(
+        _user_repository=user_repository, _hash_service=hash_service
+    )
 
 
 @pytest.fixture
@@ -44,13 +48,12 @@ def auth_service(
     hash_service: BaseHashService,
     jwt_service: JWTService,
 ) -> BaseAuthService:
-    
+
     return AuthServiceImpl(
         _user_repository=user_repository,
         _hash_service=hash_service,
         _jwt_service=jwt_service,
     )
-
 
 
 @pytest.fixture
@@ -68,9 +71,13 @@ def login_use_case(
 
 
 @pytest_asyncio.fixture(autouse=True)
-async def test_user(user_repository: BaseUserRepository, hash_service: BaseHashService) -> UserModel:
-    user: UserCreateSchema = UserCreateSchema(email='testuser@gmail.com', password='testtest123')
-    hashed_password: str =  hash_service.get_password_hash(password=user.password)
+async def test_user(
+    user_repository: BaseUserRepository, hash_service: BaseHashService
+) -> UserModel:
+    user: UserCreateSchema = UserCreateSchema(
+        email="testuser@gmail.com", password="testtest123"
+    )
+    hashed_password: str = hash_service.get_password_hash(password=user.password)
     user = await user_repository.add(user, hashed_password=hashed_password)
     return user
 
@@ -80,7 +87,7 @@ async def update_user_use_case(
     user_repository: BaseUserRepository,
     hash_service: BaseHashService,
 ) -> UpdateUserUseCase:
-    
+
     return UpdateUserUseCase(
         _user_repository=user_repository,
         _hash_service=hash_service,

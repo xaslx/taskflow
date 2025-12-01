@@ -10,6 +10,8 @@ class GetAllTasksUseCase:
 
     async def execute(self, team_id: int) -> list[TaskOut]:
 
-        tasks: list[TaskModel] = await self._task_repository.get_all_by_team_id(team_id=team_id)
+        tasks: list[TaskModel] = await self._task_repository.get_all_by_team_id(
+            team_id=team_id
+        )
 
         return [TaskOut.model_validate(task) for task in tasks]

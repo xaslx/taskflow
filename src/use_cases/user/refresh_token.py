@@ -3,7 +3,6 @@ from src.services.jwt import JWTService
 from fastapi import HTTPException, status
 
 
-
 @dataclass
 class RefreshTokenUseCase:
     _jwt_service: JWTService

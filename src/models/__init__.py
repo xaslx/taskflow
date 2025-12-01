@@ -6,10 +6,10 @@ from .meeting import MeetingModel
 
 
 __all__ = [
-    'TeamModel',
-    'UserModel',
-    'TaskCommentModel',
-    'EvaluationModel',
-    'TaskModel',
-    'MeetingModel',
+    "TeamModel",
+    "UserModel",
+    "TaskCommentModel",
+    "EvaluationModel",
+    "TaskModel",
+    "MeetingModel",
 ]

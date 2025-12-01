@@ -22,7 +22,6 @@ class CreateTaskUseCase:
 
         if not team:
             raise TeamNotFoundException()
-        
 
         author: UserModel | None = await self._user_repository.get_by_id(author_id)
 
@@ -31,7 +30,6 @@ class CreateTaskUseCase:
 
         if author.team_id != team.id:
             raise UserNotInTeamException()
-        
 
         task_model: TaskModel = await self._task_repository.add(task, author_id)
         return TaskOut.model_validate(task_model)

@@ -7,7 +7,7 @@ class UserAlreadyExists(BaseAppException):
 
     @property
     def message(self) -> str:
-        return 'Пользователь уже зарегистрирован.'
+        return "Пользователь уже зарегистрирован."
 
 
 class IncorrectEmailOrPasswordException(BaseAppException):
@@ -15,7 +15,7 @@ class IncorrectEmailOrPasswordException(BaseAppException):
 
     @property
     def message(self) -> str:
-        return 'Неверный email или пароль.'
+        return "Неверный email или пароль."
 
 
 class UserNotFoundException(BaseAppException):
@@ -23,8 +23,7 @@ class UserNotFoundException(BaseAppException):
 
     @property
     def message(self) -> str:
-        return 'Пользователь не найден.'
-
+        return "Пользователь не найден."
 
 
 class UnauthorizedException(BaseAppException):
@@ -32,16 +31,15 @@ class UnauthorizedException(BaseAppException):
 
     @property
     def message(self) -> str:
-        return 'Пользователь не авторизован.'
-    
+        return "Пользователь не авторизован."
+
 
 class ForbiddenException(BaseAppException):
     status_code = status.HTTP_403_FORBIDDEN
 
     @property
     def message(self) -> str:
-        return 'Недостаточно прав.'
-    
+        return "Недостаточно прав."
 
 
 class AlreadyInTeamException(BaseAppException):
@@ -49,28 +47,28 @@ class AlreadyInTeamException(BaseAppException):
 
     @property
     def message(self) -> str:
-        return 'Пользователь уже состоит в команде.'
-    
+        return "Пользователь уже состоит в команде."
+
 
 class UserNotInTeamException(BaseAppException):
     status_code = status.HTTP_400_BAD_REQUEST
 
     @property
     def message(self) -> str:
-        return 'Пользователь не состоит в команде.'
-    
+        return "Пользователь не состоит в команде."
+
 
 class InvalidRoleException(BaseAppException):
     status_code = status.HTTP_400_BAD_REQUEST
 
     @property
     def message(self) -> str:
-        return 'Недопустимая роль пользователя.'
-    
+        return "Недопустимая роль пользователя."
+
 
 class ManagerNotInTeamException(BaseAppException):
     status_code = status.HTTP_400_BAD_REQUEST
 
     @property
     def message(self) -> str:
-        return 'Менеджер не состоит в команде.'
+        return "Менеджер не состоит в команде."

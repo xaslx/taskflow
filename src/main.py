@@ -9,7 +9,14 @@ from src.routers import auth, users, teams, tasks, evaluations, meeting, main_pa
 from fastapi.middleware.cors import CORSMiddleware
 from src.ioc import AppProvider
 from sqladmin import Admin
-from src.models.admin import UserAdmin, TaskAdmin, TaskCommentAdmin, TeamAdmin, MeetingAdmin, EvaluationAdmin
+from src.models.admin import (
+    UserAdmin,
+    TaskAdmin,
+    TaskCommentAdmin,
+    TeamAdmin,
+    MeetingAdmin,
+    EvaluationAdmin,
+)
 from src.database.postgres import new_engine_and_session_maker
 
 
@@ -34,9 +41,9 @@ def create_app() -> FastAPI:
     )
 
     app: FastAPI = FastAPI(
-        title='TaskFlow',
-        description='Система управления бизнесом',
-        version='0.1',
+        title="TaskFlow",
+        description="Система управления бизнесом",
+        version="0.1",
     )
     _, engine = new_engine_and_session_maker(config=config)
     admin: Admin = Admin(app=app, engine=engine)
@@ -47,21 +54,21 @@ def create_app() -> FastAPI:
     admin.add_view(EvaluationAdmin)
     admin.add_view(MeetingAdmin)
 
-    app.include_router(auth.router, prefix='/api/auth', tags=['Аутентификация и Авторизация'])
-    app.include_router(users.router, prefix='/api/users', tags=['Пользователи'])
-    app.include_router(teams.router, prefix='/api/teams', tags=['Команда'])
-    app.include_router(tasks.router, prefix='/api/tasks', tags=['Задачи'])
-    app.include_router(evaluations.router, prefix='/api/evaluations', tags=['Оценки'])
-    app.include_router(meeting.router, prefix='/api/meetings', tags=['Встречи'])
-    app.include_router(main_page.router, prefix='', tags=['Главная страница'])
-
-
+    app.include_router(
+        auth.router, prefix="/api/auth", tags=["Аутентификация и Авторизация"]
+    )
+    app.include_router(users.router, prefix="/api/users", tags=["Пользователи"])
+    app.include_router(teams.router, prefix="/api/teams", tags=["Команда"])
+    app.include_router(tasks.router, prefix="/api/tasks", tags=["Задачи"])
+    app.include_router(evaluations.router, prefix="/api/evaluations", tags=["Оценки"])
+    app.include_router(meeting.router, prefix="/api/meetings", tags=["Встречи"])
+    app.include_router(main_page.router, prefix="", tags=["Главная страница"])
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=['*'],
-        allow_methods=['*'],
-        allow_headers=['*'],
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
     fastapi_integration.setup_dishka(container=container, app=app)
 
@@ -69,8 +76,7 @@ def create_app() -> FastAPI:
     async def app_error_exception_handler(request: Request, exc: BaseAppException):
         return JSONResponse(
             status_code=exc.status_code,
-            content={'detail': exc.message},
+            content={"detail": exc.message},
         )
-
 
     return app

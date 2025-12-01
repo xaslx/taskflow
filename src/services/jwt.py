@@ -8,7 +8,6 @@ from fastapi import HTTPException, status
 from src.config import Config
 
 
-
 @dataclass
 class JWTService(ABC):
     @abstractmethod
@@ -39,20 +38,19 @@ class JWTServiceImpl(JWTService):
     ) -> str:
         to_encode = data.copy()
         expire = datetime.now() + expires_delta
-        to_encode.update({'exp': expire, 'type': token_type})
+        to_encode.update({"exp": expire, "type": token_type})
         return jwt.encode(to_encode, secret_key, algorithm=self.config.algorithm)
 
     def _verify_token(self, token: str, expected_type: str, secret_key: str) -> dict:
         try:
             payload = jwt.decode(token, secret_key, algorithms=[self.config.algorithm])
-            if payload.get('type') != expected_type:
-                raise IncorrectTokenException('Invalid token type')
+            if payload.get("type") != expected_type:
+                raise IncorrectTokenException("Invalid token type")
             return payload
         except ExpiredSignatureError:
             raise TokenExpiredException()
         except InvalidTokenError as e:
             raise IncorrectTokenException()
-
 
     def _create_access_token(self, data: dict, exp: int | None = None) -> str:
         expires_delta = timedelta(
@@ -61,7 +59,7 @@ class JWTServiceImpl(JWTService):
         return self._create_token(
             data,
             expires_delta,
-            'access',
+            "access",
             self.config.jwt_secret_key,
         )
 
@@ -70,7 +68,7 @@ class JWTServiceImpl(JWTService):
         return self._create_token(
             data,
             expires_delta,
-            'refresh',
+            "refresh",
             self.config.refresh_secret_key,
         )
 
@@ -82,22 +80,22 @@ class JWTServiceImpl(JWTService):
     def verify_access_token(self, token: str) -> dict:
         return self._verify_token(
             token,
-            'access',
+            "access",
             self.config.jwt_secret_key,
         )
 
     def verify_refresh_token(self, token: str) -> dict:
         return self._verify_token(
             token,
-            'refresh',
+            "refresh",
             self.config.refresh_secret_key,
         )
 
     def refresh_access_token(self, refresh_token: str) -> str:
         try:
             payload = self.verify_refresh_token(refresh_token)
-            payload.pop('exp', None)
-            payload.pop('type', None)
+            payload.pop("exp", None)
+            payload.pop("type", None)
 
             return self._create_access_token(payload)
         except (TokenExpiredException, IncorrectTokenException) as e:

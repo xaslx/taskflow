@@ -2,7 +2,6 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from datetime import datetime
 
 
-
 class MeetingBase(BaseModel):
     title: str = Field(max_length=100)
     description: str | None = Field(default=None, max_length=500)
@@ -10,14 +9,13 @@ class MeetingBase(BaseModel):
     end_time: datetime
     participant_ids: list[int] = Field(default=[])
 
-    @field_validator('end_time')
+    @field_validator("end_time")
     @classmethod
     def validate_end_time(cls, end_time: datetime, info):
-        start_time = info.data.get('start_time')
+        start_time = info.data.get("start_time")
         if start_time and end_time <= start_time:
-            raise ValueError('Время окончания должно быть после времени начала')
+            raise ValueError("Время окончания должно быть после времени начала")
         return end_time
-
 
 
 class MeetingCreate(MeetingBase):

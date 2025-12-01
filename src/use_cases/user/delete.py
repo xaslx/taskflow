@@ -4,7 +4,6 @@ from src.repositories.user import BaseUserRepository
 from src.exceptions.user import UserNotFoundException
 
 
-
 @dataclass
 class DeleteUserUseCase:
     _user_repository: BaseUserRepository

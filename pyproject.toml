@@ -6,15 +6,40 @@ authors = [
     {name = "maksim",email = "knyazev.maksim2852@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<4.0"
 dependencies = [
     "fastapi[all] (>=0.121.3,<0.122.0)",
     "alembic (>=1.17.2,<2.0.0)",
     "jinja2 (>=3.1.6,<4.0.0)",
-    "dishka (>=1.7.2,<2.0.0)"
+    "dishka (>=1.7.2,<2.0.0)",
+    "pytest (>=9.0.1,<10.0.0)",
+    "asyncpg (>=0.30.0,<0.31.0)",
+    "pydantic-settings (>=2.12.0,<3.0.0)",
+    "pyjwt (>=2.10.1,<3.0.0)",
+    "bcrypt (==4.0.1)",
+    "passlib (>=1.7.4,<2.0.0)",
+    "sqladmin[full] (>=0.22.0,<0.23.0)",
+    "psycopg2-binary (>=2.9.11,<3.0.0)",
+    "httpx (>=0.28.1,<0.29.0)",
+    "pytest-asyncio (>=1.3.0,<2.0.0)",
+    "aiosqlite (>=0.21.0,<0.22.0)",
+    "black (>=25.11.0,<26.0.0)",
 ]
 
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.balck]
+target-version = ['py312']
+exclude = '''
+/(
+    \.venv
+  | env
+  | build
+  | dist
+  | migrations
+)/
+'''

@@ -7,4 +7,4 @@ class TeamNotFoundException(BaseAppException):
 
     @property
     def message(self) -> str:
-        return 'Команда не найдена'
+        return "Команда не найдена"
