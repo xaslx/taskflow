@@ -6,9 +6,8 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 RUN apt update -y && \
-    apt install -y python3-dev \
-    gcc \
-    musl-dev
+    apt install -y python3-dev gcc musl-dev netcat-traditional postgresql-client && \
+    apt clean
 
 COPY pyproject.toml poetry.lock* /app/
 
@@ -19,3 +18,10 @@ RUN poetry config virtualenvs.create false
 RUN poetry install --no-root --no-interaction --no-ansi
 
 COPY . /app/
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["uvicorn", "--factory", "src.main:create_app", "--host", "0.0.0.0", "--port", "8000"]

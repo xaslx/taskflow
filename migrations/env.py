@@ -18,7 +18,7 @@ config.set_main_option(
     "postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}?async_fallback=True".format(
         user=os.getenv("POSTGRES_USER"),
         password=os.getenv("POSTGRES_PASSWORD"),
-        host="localhost",
+        host=os.getenv("POSTGRES_HOST"),
         port=os.getenv("POSTGRES_PORT"),
         db=os.getenv("POSTGRES_DB"),
     ),

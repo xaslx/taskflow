@@ -4,23 +4,30 @@ services:
     container_name: taskflow
     ports: 
       - "${FASTAPI_PORT}:8000"
-    command: "uvicorn --factory src.main:create_app --reload --host 0.0.0.0 --port 8000"
     env_file:
       - .env
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
     volumes:
       - .:/app
     networks:
       - backend
     depends_on:
       - postgres
+    command: >
+      uvicorn --factory src.main:create_app
+              --reload
+              --host 0.0.0.0
+              --port 8000
 
   postgres:
     image: postgres:16
     container_name: postgres_taskflow
-    ports:
-      - "5432:5432"
     env_file:
       - .env
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -34,10 +41,10 @@ services:
     image: dpage/pgadmin4
     container_name: pgadmin_taskflow
     restart: always
-    ports:
-      - "5050:80"
     env_file:
       - .env
+    ports:
+      - "5050:80"
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
@@ -52,3 +59,4 @@ volumes:
 networks:
   backend:
     driver: bridge
+
