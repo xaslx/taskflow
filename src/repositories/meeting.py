@@ -6,6 +6,10 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from src.models.meeting import MeetingModel
 from src.schemas.meeting import MeetingCreate
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class BaseMeetingRepository(ABC):
@@ -34,14 +38,19 @@ class SQLAlchemyMeetingRepository:
     _session: AsyncSession
 
     async def add(self, meeting_data: MeetingCreate, organizer_id: int) -> MeetingModel:
-        meeting_model = MeetingModel(
-            **meeting_data.model_dump(), organizer_id=organizer_id
-        )
-        self._session.add(meeting_model)
-        await self._session.flush()
-        await self._session.refresh(meeting_model)
-        await self._session.commit()
-        return meeting_model
+        try:
+            meeting_model = MeetingModel(
+                **meeting_data.model_dump(), organizer_id=organizer_id
+            )
+            self._session.add(meeting_model)
+            await self._session.flush()
+            await self._session.refresh(meeting_model)
+            await self._session.commit()
+            return meeting_model
+        except Exception as exc:
+            logger.exception(f"Не удалось добавить данные: {meeting_data.model_dump()}")
+            raise
+
 
     async def get_by_id(self, meeting_id: int) -> MeetingModel | None:
         stmt = (
@@ -102,5 +111,9 @@ class SQLAlchemyMeetingRepository:
         return result.scalars().all()
 
     async def delete(self, meeting: MeetingModel) -> None:
-        await self._session.delete(meeting)
-        await self._session.commit()
+        try:
+            await self._session.delete(meeting)
+            await self._session.commit()
+        except Exception as exc:
+            logger.exception(f"Не удалось удалить данные: Meeting: {meeting.id}: {meeting.title}")
+            raise

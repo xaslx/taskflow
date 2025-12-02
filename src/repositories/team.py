@@ -7,6 +7,10 @@ from src.schemas.team import TeamOut
 from src.schemas.pagination import PaginatedResponse, PaginationParams
 from src.models.team import TeamModel
 from src.schemas.team import CreateTeamSchema
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class BaseTeamRepository(ABC):
@@ -34,12 +38,16 @@ class SQLAlchemyTeamRepository:
     _session: AsyncSession
 
     async def add(self, team: CreateTeamSchema, code: str) -> TeamModel:
-        team_model = TeamModel(**team.model_dump(), code=code)
-        self._session.add(team_model)
-        await self._session.flush()
-        await self._session.refresh(team_model)
-        await self._session.commit()
-        return team_model
+        try:
+            team_model = TeamModel(**team.model_dump(), code=code)
+            self._session.add(team_model)
+            await self._session.flush()
+            await self._session.refresh(team_model)
+            await self._session.commit()
+            return team_model
+        except Exception as exc:
+            logger.exception(f"Не удалось добавить данные: {team.model_dump()}")
+            raise
 
     async def get_by_id(self, id: int) -> TeamModel | None:
         stmt = (
@@ -88,6 +96,10 @@ class SQLAlchemyTeamRepository:
         )
 
     async def save(self, team: TeamModel) -> TeamModel:
-        await self._session.commit()
-        await self._session.refresh(team)
-        return team
+        try:
+            await self._session.commit()
+            await self._session.refresh(team)
+            return team
+        except Exception as exc:
+            logger.exception(f"Не удалось сохранить данные: Team: {team.id}: {team.name}")
+            raise

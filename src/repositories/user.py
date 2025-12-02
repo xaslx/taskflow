@@ -5,6 +5,10 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from src.schemas.user import UserCreateSchema
 from datetime import datetime
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class BaseUserRepository(ABC):
@@ -33,14 +37,18 @@ class SQLAlchemyUserRepository:
     _session: AsyncSession
 
     async def add(self, user: UserCreateSchema, hashed_password: str) -> UserModel:
-        user_model: UserModel = UserModel(
-            **user.model_dump(exclude="password"), hashed_password=hashed_password
-        )
-        self._session.add(user_model)
-        await self._session.flush()
-        await self._session.refresh(user_model)
-        await self._session.commit()
-        return user_model
+        try:
+            user_model: UserModel = UserModel(
+                **user.model_dump(exclude="password"), hashed_password=hashed_password
+            )
+            self._session.add(user_model)
+            await self._session.flush()
+            await self._session.refresh(user_model)
+            await self._session.commit()
+            return user_model
+        except Exception as exc:
+            logger.exception(f"Не удалось добавить данные: {user.model_dump()}")
+            raise
 
     async def get_by_id(self, id: int) -> UserModel | None:
         stmt = select(UserModel).where(
@@ -66,14 +74,21 @@ class SQLAlchemyUserRepository:
         return result.scalar_one_or_none() is not None
 
     async def save(self, user: UserModel) -> UserModel:
-        await self._session.commit()
-        await self._session.refresh(user)
-
-        return user
+        try:
+            await self._session.commit()
+            await self._session.refresh(user)
+            return user
+        except Exception as exc:
+            logger.exception(f"Не удалось сохранить данные: User: {user.id}: {user.email}")
+            raise
 
     async def delete(self, user: UserModel) -> None:
-        user.is_deleted = True
-        await self.save(user)
+        try:
+            user.is_deleted = True
+            await self.save(user)
+        except Exception as exc:
+            logger.exception(f"Не удалось удалить данные: User: {user.id}: {user.email}")
+            raise
 
 
 @dataclass

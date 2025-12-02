@@ -5,6 +5,10 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from src.models.evaluation import EvaluationModel
 from src.schemas.evaluation import EvaluationCreate
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class BaseEvaluationRepository(ABC):
@@ -28,14 +32,19 @@ class SQLAlchemyEvaluationRepository:
     async def add(
         self, evaluation_data: EvaluationCreate, evaluator_id: int, user_id: int
     ) -> EvaluationModel:
-        evaluation_model = EvaluationModel(
-            **evaluation_data.model_dump(), evaluator_id=evaluator_id, user_id=user_id
-        )
-        self._session.add(evaluation_model)
-        await self._session.flush()
-        await self._session.refresh(evaluation_model)
-        await self._session.commit()
-        return evaluation_model
+        
+        try:
+            evaluation_model = EvaluationModel(
+                **evaluation_data.model_dump(), evaluator_id=evaluator_id, user_id=user_id
+            )
+            self._session.add(evaluation_model)
+            await self._session.flush()
+            await self._session.refresh(evaluation_model)
+            await self._session.commit()
+            return evaluation_model
+        except Exception as exc:
+            logger.exception(f"Не удалось добавить данные: {evaluation_data.model_dump()}")
+            raise
 
     async def get_by_user_id(self, user_id: int) -> list[EvaluationModel]:
         stmt = (
