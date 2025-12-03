@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from src.exceptions.meeting import TimeConflictException
+from src.exceptions.meeting import InvalidMeetingTimeException, TimeConflictException
 from src.models.user import UserModel
 from src.repositories.meeting import BaseMeetingRepository
 from src.repositories.user import BaseUserRepository
@@ -7,6 +7,7 @@ from src.repositories.team import BaseTeamRepository
 from src.schemas.meeting import MeetingCreate, MeetingOut
 from src.exceptions.user import UserNotInTeamException
 from src.models.meeting import MeetingModel
+from datetime import datetime, timezone
 
 
 @dataclass
@@ -22,6 +23,12 @@ class CreateMeetingUseCase:
         organizer: UserModel | None = await self._user_repository.get_by_id(
             organizer_id
         )
+
+        current_time: datetime = datetime.now(tz=timezone.utc)
+        
+
+        if meeting_data.start_time < current_time:
+            raise InvalidMeetingTimeException()
 
         if not organizer or organizer.team_id != meeting_data.team_id:
             raise UserNotInTeamException()
