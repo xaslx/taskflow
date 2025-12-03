@@ -16,3 +16,11 @@ class MeetingNotFoundException(BaseAppException):
     @property
     def message(self) -> str:
         return "Встреча не найдена."
+
+
+class InvalidMeetingTimeException(BaseAppException):
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    @property
+    def message(self) -> str:
+        return "Встреча не может начинаться в дату и время, которое уже прошло."
