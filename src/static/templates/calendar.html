@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календарь</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .user-header {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .user-info {
+            font-size: 14px;
+        }
+        
+        .calendar-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .calendar-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background-color: #e0e0e0;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 15px;
+        }
+        
+        .calendar-legend {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            color: #666;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .calendar-day-header {
+            background-color: #f0f0f0;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .calendar-day {
+            background-color: white;
+            padding: 10px;
+            min-height: 80px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .calendar-day.empty {
+            background-color: #f9f9f9;
+            cursor: default;
+        }
+        
+        .calendar-day.today {
+            background-color: #e8f4fd;
+        }
+        
+        .day-number {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .event-indicators {
+            display: flex;
+            gap: 4px;
+            margin-top: 5px;
+        }
+        
+        .event-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .event-indicator.task {
+            background-color: #f44336;
+        }
+        
+        .event-indicator.meeting {
+            background-color: #ffeb3b;
+            border: 1px solid #ffd600;
+        }
+        
+        .selected-day {
+            background-color: #e3f2fd;
+            border: 2px solid #2196F3;
+        }
+        
+        .details-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .error {
+            color: #f44336;
+            padding: 10px;
+            background-color: #ffebee;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .events-container {
+            margin-top: 20px;
+        }
+        
+        .event-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .event-tab {
+            padding: 8px 16px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .event-tab.active {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .task-item, .meeting-item {
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 15px 0;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .meeting-item {
+            border-left-color: #2196F3;
+        }
+        
+        .task-header, .meeting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        
+        .task-title, .meeting-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+            flex: 1;
+        }
+        
+        .task-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status-pending { background-color: #ffeb3b; color: #856404; }
+        .status-in_progress { background-color: #2196f3; color: white; }
+        .status-completed { background-color: #4caf50; color: white; }
+        
+        .task-details, .meeting-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .detail-item {
+            font-size: 13px;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #666;
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        .detail-value {
+            color: #333;
+            word-break: break-word;
+        }
+        
+        .comments-section {
+            margin-top: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .comment-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: #f9f9f9;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        
+        .participants-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        
+        .participant-badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        
+        .datetime-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .empty-state {
+            color: #999;
+            font-style: italic;
+            padding: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="user-header">
+        <h2>Календарь</h2>
+        <div class="user-info">
+            <div>ID: <span id="userId">-</span></div>
+            <div>Email: <span id="userEmail">-</span></div>
+        </div>
+    </div>
+    
+    <div class="calendar-container">
+        <div class="calendar-controls">
+            <div>
+                <button id="prevMonth">←</button>
+                <span style="margin: 0 15px; font-weight: bold;" id="currentMonth">Загрузка...</span>
+                <button id="nextMonth">→</button>
+            </div>
+            <div>
+                <button id="todayBtn">Сегодня</button>
+            </div>
+        </div>
+        
+        <div class="calendar-grid" id="calendarGrid"></div>
+        
+        <div class="calendar-legend">
+            <div class="legend-item">
+                <div class="event-indicator task"></div>
+                <span>Задачи</span>
+            </div>
+            <div class="legend-item">
+                <div class="event-indicator meeting"></div>
+                <span>Встречи</span>
+            </div>
+            <div class="legend-item">
+                <div style="width: 12px; height: 12px; background: #e8f4fd; border: 2px solid #2196F3; border-radius: 3px;"></div>
+                <span>Сегодня</span>
+            </div>
+            <div class="legend-item">
+                <div style="width: 12px; height: 12px; background: #e3f2fd; border: 2px solid #045ea8; border-radius: 3px;"></div>
+                <span>Выбранный день</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="details-section">
+        <div id="dayDetails">
+            <h3>Выберите день</h3>
+            <div class="loading">Нажмите на день в календаре</div>
+        </div>
+    </div>
+
+    <div id="userData" 
+         data-user-id="{{ user.id }}" 
+         data-user-email="{{ user.email }}"
+         style="display: none;">
+    </div>
+
+    <script>
+        const userDataElement = document.getElementById('userData');
+        const currentUser = {
+            id: userDataElement ? userDataElement.dataset.userId : null,
+            email: userDataElement ? userDataElement.dataset.userEmail : null
+        };
+        
+        if (currentUser.id && currentUser.email) {
+            document.getElementById('userId').textContent = currentUser.id;
+            document.getElementById('userEmail').textContent = currentUser.email;
+        }
+    </script>
+
+    <script>
+        let currentDate = new Date();
+        let calendarData = null;
+        let selectedDay = null;
+        let activeTab = 'all';
+        
+        const monthNames = [
+            'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+            'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+        ];
+        
+        const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+        
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (!currentUser.id) return;
+            
+            await loadMonthCalendar();
+            
+            document.getElementById('prevMonth').addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                loadMonthCalendar();
+            });
+            
+            document.getElementById('nextMonth').addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                loadMonthCalendar();
+            });
+            
+            document.getElementById('todayBtn').addEventListener('click', () => {
+                currentDate = new Date();
+                loadMonthCalendar();
+            });
+        });
+        
+        async function loadMonthCalendar() {
+            if (!currentUser || !currentUser.id) return;
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth() + 1;
+            
+            try {
+                const calendarGrid = document.getElementById('calendarGrid');
+                calendarGrid.innerHTML = '<div class="loading" style="grid-column: 1 / -1;">Загрузка...</div>';
+                
+                document.getElementById('currentMonth').textContent = 
+                    `${monthNames[currentDate.getMonth()]} ${year}`;
+                
+                const url = new URL('/calendar/month', window.location.origin);
+                url.searchParams.append('year', year);
+                url.searchParams.append('month', month);
+                
+                const response = await fetch(url.toString());
+                
+                if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+                
+                calendarData = await response.json();
+                renderCalendar(year, month);
+                
+            } catch (error) {
+                document.getElementById('calendarGrid').innerHTML = 
+                    `<div class="error" style="grid-column: 1 / -1;">Ошибка: ${error.message}</div>`;
+            }
+        }
+        
+        function renderCalendar(year, month) {
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = '';
+            
+            dayNames.forEach(dayName => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day-header';
+                dayHeader.textContent = dayName;
+                calendarGrid.appendChild(dayHeader);
+            });
+            
+            const firstDay = new Date(year, month - 1, 1);
+            const lastDay = new Date(year, month, 0);
+            const daysInMonth = lastDay.getDate();
+            
+            let firstDayOfWeek = firstDay.getDay();
+            firstDayOfWeek = firstDayOfWeek === 0 ? 7 : firstDayOfWeek;
+            
+            for (let i = 1; i < firstDayOfWeek; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day empty';
+                calendarGrid.appendChild(emptyDay);
+            }
+            
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.dataset.date = dateStr;
+                
+                if (dateStr === todayStr) {
+                    dayElement.classList.add('today');
+                }
+                
+                if (selectedDay && selectedDay.dataset.date === dateStr) {
+                    dayElement.classList.add('selected-day');
+                }
+                
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'day-number';
+                dayNumber.textContent = day;
+                dayElement.appendChild(dayNumber);
+                
+                const dayEvents = getEventsForDay(year, month, day);
+                
+                if (dayEvents.tasks > 0 || dayEvents.meetings > 0) {
+                    const eventIndicators = document.createElement('div');
+                    eventIndicators.className = 'event-indicators';
+                    
+                    if (dayEvents.tasks > 0) {
+                        const taskIndicator = document.createElement('div');
+                        taskIndicator.className = 'event-indicator task';
+                        eventIndicators.appendChild(taskIndicator);
+                    }
+                    
+                    if (dayEvents.meetings > 0) {
+                        const meetingIndicator = document.createElement('div');
+                        meetingIndicator.className = 'event-indicator meeting';
+                        eventIndicators.appendChild(meetingIndicator);
+                    }
+                    
+                    dayElement.appendChild(eventIndicators);
+                }
+                
+                dayElement.addEventListener('click', () => selectDay(dayElement));
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+        
+        function getEventsForDay(year, month, day) {
+            if (!calendarData) return { tasks: 0, meetings: 0 };
+            
+            const dateStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+            
+            const tasksOnDay = calendarData.tasks?.filter(task => {
+                if (!task.created_at) return false;
+                const taskDate = new Date(task.created_at).toISOString().split('T')[0];
+                return taskDate === dateStr;
+            }) || [];
+            
+            const meetingsOnDay = calendarData.meetings?.filter(meeting => {
+                if (!meeting.start_time) return false;
+                const meetingDate = new Date(meeting.start_time).toISOString().split('T')[0];
+                return meetingDate === dateStr;
+            }) || [];
+            
+            return {
+                tasks: tasksOnDay.length,
+                meetings: meetingsOnDay.length
+            };
+        }
+        
+        async function selectDay(dayElement) {
+            if (!currentUser || !currentUser.id) return;
+            
+            if (selectedDay) {
+                selectedDay.classList.remove('selected-day');
+            }
+            
+            dayElement.classList.add('selected-day');
+            selectedDay = dayElement;
+            
+            const dateStr = dayElement.dataset.date;
+            const [year, month, day] = dateStr.split('-').map(Number);
+            
+            const dayDetails = document.getElementById('dayDetails');
+            dayDetails.innerHTML = `
+                <h3>${day} ${monthNames[month-1]} ${year}</h3>
+                <div class="loading">Загрузка...</div>
+            `;
+            
+            try {
+                const url = new URL('/calendar/day', window.location.origin);
+                url.searchParams.append('date', dateStr);
+                
+                const response = await fetch(url.toString());
+                
+                if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+                
+                const dayData = await response.json();
+                displayDayDetails(dayData, day, month, year);
+                
+            } catch (error) {
+                dayDetails.innerHTML = `
+                    <h3>${day} ${monthNames[month-1]} ${year}</h3>
+                    <div class="error">Ошибка: ${error.message}</div>
+                `;
+            }
+        }
+        
+        function displayDayDetails(data, day, month, year) {
+            const dayDetails = document.getElementById('dayDetails');
+            
+            let html = `
+                <h3>${day} ${monthNames[month-1]} ${year}</h3>
+                
+                <div class="event-tabs">
+                    <div class="event-tab ${activeTab === 'all' ? 'active' : ''}" onclick="changeTab('all')">
+                        Все
+                    </div>
+                    <div class="event-tab ${activeTab === 'tasks' ? 'active' : ''}" onclick="changeTab('tasks')">
+                        Задачи (${data.tasks?.length || 0})
+                    </div>
+                    <div class="event-tab ${activeTab === 'meetings' ? 'active' : ''}" onclick="changeTab('meetings')">
+                        Встречи (${data.meetings?.length || 0})
+                    </div>
+                </div>
+                
+                <div class="events-container">
+            `;
+            
+            if ((activeTab === 'all' || activeTab === 'tasks') && data.tasks && data.tasks.length > 0) {
+                data.tasks.forEach(task => {
+                    const statusClass = `status-${task.status}`;
+                    const createdDate = new Date(task.created_at);
+                    const updatedDate = new Date(task.updated_at);
+                    const deadlineDate = task.deadline ? new Date(task.deadline) : null;
+                    
+                    html += `
+                    <div class="task-item">
+                        <div class="task-header">
+                            <div class="task-title">${task.title}</div>
+                            <div class="task-status ${statusClass}">${task.status}</div>
+                        </div>
+                        
+                        ${task.description ? `
+                        <div style="color: #333; margin: 10px 0; padding: 10px; background: white; border-radius: 4px; border: 1px solid #e0e0e0;">
+                            <strong>Описание:</strong> ${task.description}
+                        </div>` : ''}
+                        
+                        <div class="task-details">
+                            <div class="detail-item">
+                                <span class="detail-label">ID задачи:</span>
+                                <span class="detail-value">${task.id}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Автор:</span>
+                                <span class="detail-value">ID ${task.author_id}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Исполнитель:</span>
+                                <span class="detail-value">${task.assignee_id ? 'ID ' + task.assignee_id : 'Не назначен'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Команда:</span>
+                                <span class="detail-value">ID ${task.team_id}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Создана:</span>
+                                <span class="detail-value">${createdDate.toLocaleDateString()} ${createdDate.toLocaleTimeString()}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Обновлена:</span>
+                                <span class="detail-value">${updatedDate.toLocaleDateString()} ${updatedDate.toLocaleTimeString()}</span>
+                            </div>
+                            ${deadlineDate ? `
+                            <div class="detail-item">
+                                <span class="detail-label">Дедлайн:</span>
+                                <span class="detail-value" style="color: ${deadlineDate < new Date() ? '#f44336' : '#4CAF50'}">
+                                    ${deadlineDate.toLocaleDateString()} ${deadlineDate.toLocaleTimeString()}
+                                </span>
+                            </div>` : ''}
+                        </div>
+                        
+                        ${task.comments && task.comments.length > 0 ? `
+                        <div class="comments-section">
+                            <div style="font-weight: bold; margin-bottom: 8px;">Комментарии (${task.comments.length}):</div>
+                            ${task.comments.map(comment => `
+                                <div class="comment-item">
+                                    ${comment.text || 'Нет текста'}
+                                    <div class="datetime-info">
+                                        Добавлен: ${new Date(comment.created_at).toLocaleDateString()}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>` : ''}
+                    </div>`;
+                });
+            } else if (activeTab === 'tasks' || activeTab === 'all') {
+                html += `<div class="empty-state">Нет задач на этот день</div>`;
+            }
+            
+            if ((activeTab === 'all' || activeTab === 'meetings') && data.meetings && data.meetings.length > 0) {
+                data.meetings.forEach(meeting => {
+                    const startTime = new Date(meeting.start_time);
+                    const endTime = new Date(meeting.end_time);
+                    const createdDate = new Date(meeting.created_at);
+                    const duration = Math.round((endTime - startTime) / (1000 * 60));
+                    
+                    html += `
+                    <div class="meeting-item">
+                        <div class="meeting-header">
+                            <div class="meeting-title">${meeting.title}</div>
+                            <div style="color: #2196F3; font-size: 12px; font-weight: bold; padding: 4px 10px; background: #e3f2fd; border-radius: 12px;">
+                                ${duration} мин
+                            </div>
+                        </div>
+                        
+                        ${meeting.description ? `
+                        <div style="color: #333; margin: 10px 0; padding: 10px; background: white; border-radius: 4px; border: 1px solid #e0e0e0;">
+                            <strong>Описание:</strong> ${meeting.description}
+                        </div>` : ''}
+                        
+                        <div class="meeting-details">
+                            <div class="detail-item">
+                                <span class="detail-label">ID встречи:</span>
+                                <span class="detail-value">${meeting.id}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Организатор:</span>
+                                <span class="detail-value">ID ${meeting.organizer_id}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Команда:</span>
+                                <span class="detail-value">ID ${meeting.team_id}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Начало:</span>
+                                <span class="detail-value">${startTime.toLocaleDateString()} ${startTime.toLocaleTimeString()}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Окончание:</span>
+                                <span class="detail-value">${endTime.toLocaleDateString()} ${endTime.toLocaleTimeString()}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Создана:</span>
+                                <span class="detail-value">${createdDate.toLocaleDateString()} ${createdDate.toLocaleTimeString()}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Длительность:</span>
+                                <span class="detail-value">${duration} минут</span>
+                            </div>
+                        </div>
+                        
+                        ${meeting.participant_ids && meeting.participant_ids.length > 0 ? `
+                        <div style="margin-top: 15px;">
+                            <div style="font-weight: bold; margin-bottom: 5px;">Участники (${meeting.participant_ids.length}):</div>
+                            <div class="participants-list">
+                                ${meeting.participant_ids.map(pid => `
+                                    <span class="participant-badge">ID ${pid}</span>
+                                `).join('')}
+                            </div>
+                        </div>` : ''}
+                    </div>`;
+                });
+            } else if (activeTab === 'meetings' || activeTab === 'all') {
+                html += `<div class="empty-state">Нет встреч на этот день</div>`;
+            }
+            
+            html += `</div>`;
+            dayDetails.innerHTML = html;
+            window.currentDayData = data;
+        }
+        
+        window.changeTab = function(tab) {
+            activeTab = tab;
+            if (selectedDay && window.currentDayData) {
+                const dateStr = selectedDay.dataset.date;
+                const [year, month, day] = dateStr.split('-').map(Number);
+                displayDayDetails(window.currentDayData, day, month, year);
+            }
+        };
+    </script>
+</body>
+</html>
