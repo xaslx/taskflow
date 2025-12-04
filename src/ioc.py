@@ -54,6 +54,7 @@ from src.use_cases.manager.create_meeting import CreateMeetingUseCase
 from src.use_cases.user.get_user_meetings import GetUserMeetingsUseCase
 from src.use_cases.manager.delete_meeting import DeleteMeetingUseCase
 from fastapi.templating import Jinja2Templates
+from src.use_cases.user.calendar import DayCalendarUseCase, MonthCalendarUseCase
 
 
 class AppProvider(Provider):
@@ -360,6 +361,31 @@ class AppProvider(Provider):
     ) -> DeleteMeetingUseCase:
 
         return DeleteMeetingUseCase(_meeting_repository=meeting_repository)
+    
+    @provide(scope=Scope.REQUEST)
+    def get_day_calendar_use_case(
+        self,
+        task_repository: BaseTaskRepository,
+        meeting_repository: BaseMeetingRepository,
+    ) -> DayCalendarUseCase:
+        
+        return DayCalendarUseCase(
+            _meeting_repository=meeting_repository,
+            _task_repository=task_repository,
+        )
+    
+    @provide(scope=Scope.REQUEST)
+    def get_month_calendar_user_case(
+        self,
+        task_repository: BaseTaskRepository,
+        meeting_repository: BaseMeetingRepository,
+    ) -> MonthCalendarUseCase:
+        
+        return MonthCalendarUseCase(
+            _meeting_repository=meeting_repository,
+            _task_repository=task_repository,
+        )
+
 
     @provide(scope=Scope.REQUEST)
     def get_token(self, request: Request) -> str:
