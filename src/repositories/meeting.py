@@ -3,10 +3,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, date
 from src.models.meeting import MeetingModel
 from src.schemas.meeting import MeetingCreate
 import logging
+import calendar
+
 
 
 logger = logging.getLogger(__name__)
@@ -31,6 +33,22 @@ class BaseMeetingRepository(ABC):
 
     @abstractmethod
     async def delete(self, meeting: MeetingModel) -> None: ...
+
+    @abstractmethod
+    async def get_user_meetings_for_date(
+        self, 
+        user_id: int, 
+        date: date
+    ) -> list[MeetingModel]: ...
+
+    @abstractmethod
+    async def get_user_meetings_for_month(
+        self, 
+        user_id: int, 
+        year: int, 
+        month: int
+    ) -> list[MeetingModel]: ...
+
 
 
 @dataclass
@@ -117,3 +135,65 @@ class SQLAlchemyMeetingRepository:
         except Exception as exc:
             logger.exception(f"Не удалось удалить данные: Meeting: {meeting.id}: {meeting.title}")
             raise
+
+    async def get_user_meetings_for_date(
+        self, 
+        user_id: int, 
+        date: date
+    ) -> list[MeetingModel]:
+        start_of_day = datetime.combine(date, datetime.min.time())
+        end_of_day = datetime.combine(date, datetime.max.time())
+        
+        stmt = (
+            select(MeetingModel)
+            .options(
+                selectinload(MeetingModel.organizer),
+                selectinload(MeetingModel.team),
+            )
+            .where(
+                or_(
+                    MeetingModel.organizer_id == user_id,
+                    MeetingModel.participant_ids.any(user_id),
+                ),
+                MeetingModel.start_time >= start_of_day,
+                MeetingModel.start_time <= end_of_day,
+            )
+            .order_by(MeetingModel.start_time.asc())
+        )
+        
+        result = await self._session.execute(stmt)
+        return result.scalars().all()
+        
+
+    async def get_user_meetings_for_month(
+        self, 
+        user_id: int, 
+        year: int, 
+        month: int
+    ) -> list[MeetingModel]:
+        first_day = date(year, month, 1)
+        _, last_day_num = calendar.monthrange(year, month)
+        last_day = date(year, month, last_day_num)
+        
+        start_of_month = datetime.combine(first_day, datetime.min.time())
+        end_of_month = datetime.combine(last_day, datetime.max.time())
+        
+        stmt = (
+            select(MeetingModel)
+            .options(
+                selectinload(MeetingModel.organizer),
+                selectinload(MeetingModel.team),
+            )
+            .where(
+                or_(
+                    MeetingModel.organizer_id == user_id,
+                    MeetingModel.participant_ids.any(user_id),
+                ),
+                MeetingModel.start_time >= start_of_month,
+                MeetingModel.start_time <= end_of_month,
+            )
+            .order_by(MeetingModel.start_time.asc())
+        )
+        
+        result = await self._session.execute(stmt)
+        return result.scalars().all()

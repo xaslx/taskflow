@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, and_, or_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from dataclasses import dataclass
@@ -6,7 +6,8 @@ from abc import ABC, abstractmethod
 from src.models.task import TaskModel, TaskCommentModel
 from src.schemas.task import TaskCreate, TaskCommentCreate
 import logging
-
+import calendar
+from datetime import date, datetime
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,16 @@ class BaseTaskRepository(ABC):
 
     @abstractmethod
     async def delete(self, task: TaskModel) -> None: ...
+
+    @abstractmethod
+    async def get_user_tasks_for_date(self, user_id: int, date: date) -> list[TaskModel]: ...
+
+    async def get_user_tasks_for_month(
+        self, 
+        user_id: int, 
+        year: int, 
+        month: int
+    ) -> list[TaskModel]: ...
 
 
 @dataclass
@@ -52,6 +63,7 @@ class SQLAlchemyTaskRepository:
                 selectinload(TaskModel.author),
                 selectinload(TaskModel.assignee),
                 selectinload(TaskModel.team),
+                selectinload(TaskModel.comments),
             )
             .where(TaskModel.id == id)
         )
@@ -86,6 +98,66 @@ class SQLAlchemyTaskRepository:
         except Exception as exc:
             logger.exception(f"Не удалось удалить данные: Task: {task.id}: {task.title})")
             raise
+
+
+    async def get_user_tasks_for_date(self, user_id: int, date: date) -> list[TaskModel]:
+
+        start = datetime.combine(date, datetime.min.time())
+        end = datetime.combine(date, datetime.max.time())
+        
+        stmt = (
+            select(TaskModel)
+            .options(
+                selectinload(TaskModel.author),
+                selectinload(TaskModel.assignee),
+                selectinload(TaskModel.team),
+                selectinload(TaskModel.comments),
+            )
+            .where(
+                TaskModel.assignee_id == user_id,
+                TaskModel.updated_at.between(start, end)
+            )
+            .order_by(TaskModel.updated_at.desc())
+        )
+        
+        return (await self._session.execute(stmt)).scalars().all()
+    
+
+    async def get_user_tasks_for_month(
+        self, 
+        user_id: int, 
+        year: int, 
+        month: int
+    ) -> list[TaskModel]:
+
+        first_day = date(year, month, 1)
+        
+
+        _, last_day_num = calendar.monthrange(year, month)
+        last_day = date(year, month, last_day_num)
+        
+
+        start_datetime = datetime.combine(first_day, datetime.min.time())
+        end_datetime = datetime.combine(last_day, datetime.max.time())
+        
+        stmt = (
+            select(TaskModel)
+            .options(
+                selectinload(TaskModel.author),
+                selectinload(TaskModel.assignee),
+                selectinload(TaskModel.team),
+                selectinload(TaskModel.comments),
+            )
+            .where(
+                TaskModel.assignee_id == user_id,
+                TaskModel.updated_at >= start_datetime,
+                TaskModel.updated_at <= end_datetime
+            )
+            .order_by(TaskModel.updated_at.desc())
+        )
+        
+        result = await self._session.execute(stmt)
+        return result.scalars().all()
 
 
 class BaseTaskCommentRepository(ABC):
