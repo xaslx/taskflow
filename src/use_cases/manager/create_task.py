@@ -32,4 +32,5 @@ class CreateTaskUseCase:
             raise UserNotInTeamException()
 
         task_model: TaskModel = await self._task_repository.add(task, author_id)
-        return TaskOut.model_validate(task_model)
+        full_task_model = await self._task_repository.get_by_id(task_model.id)
+        return TaskOut.model_validate(full_task_model)
